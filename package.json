@@ -1,0 +1,38 @@
+{
+  "name": "@striderlabs/mcp-taskrabbit",
+  "version": "0.1.0",
+  "description": "MCP server for TaskRabbit - let AI agents book home services and taskers",
+  "main": "dist/index.js",
+  "bin": {
+    "striderlabs-mcp-taskrabbit": "dist/index.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "mcp",
+    "taskrabbit",
+    "home-services",
+    "ai-agent",
+    "strider",
+    "model-context-protocol"
+  ],
+  "author": "Strider Labs <hello@striderlabs.ai>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/markswendsen-code/mcp-taskrabbit"
+  },
+  "homepage": "https://striderlabs.ai",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "playwright": "^1.41.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3"
+  },
+  "mcpName": "io.github.markswendsen-code/taskrabbit"
+}

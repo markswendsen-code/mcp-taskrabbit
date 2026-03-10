@@ -1,0 +1,20 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.markswendsen-code/taskrabbit",
+  "description": "TaskRabbit MCP server — search home services, find taskers, book tasks, and manage bookings. By Strider Labs.",
+  "repository": {
+    "url": "https://github.com/markswendsen-code/mcp-taskrabbit",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@striderlabs/mcp-taskrabbit",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
