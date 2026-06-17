@@ -205,7 +205,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "taskrabbit_cancel_task",
         description:
-          "Cancel a booked task. Use the task ID from taskrabbit_get_tasks results. Cancellation policies may apply.",
+          "Cancel a booked task. Use the task ID from taskrabbit_get_tasks results. Cancellation policies may apply. IRREVERSIBLE: set confirm=false (or omit) to preview; set confirm=true to actually cancel.",
         inputSchema: {
           type: "object",
           properties: {
@@ -216,6 +216,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             reason: {
               type: "string",
               description: "Optional reason for cancellation",
+            },
+            confirm: {
+              type: "boolean",
+              description:
+                "Set to true to actually cancel the task. If omitted/false, returns a preview only and does NOT cancel. Default is false.",
             },
           },
           required: ["taskId"],
@@ -419,11 +424,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case "taskrabbit_cancel_task": {
-        const { taskId, reason } = args as {
+        const { taskId, reason, confirm } = args as {
           taskId: string;
           reason?: string;
+          confirm?: boolean;
         };
-        const result = await cancelTask(taskId, reason);
+        const result = await cancelTask(taskId, reason, confirm ?? false);
+
+        if (result.requiresConfirmation) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  preview: true,
+                  action: "cancel_task",
+                  warning:
+                    "This will CANCEL the task. Cancellation policies/fees may apply and this may be irreversible. Nothing has been cancelled.",
+                  details: { taskId, reason: reason ?? null },
+                  next_step: "Re-call taskrabbit_cancel_task with confirm:true to actually cancel.",
+                }),
+              },
+            ],
+          };
+        }
 
         return {
           content: [

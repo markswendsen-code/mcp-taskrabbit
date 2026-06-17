@@ -1,6 +1,6 @@
 {
   "name": "@striderlabs/mcp-taskrabbit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP server for TaskRabbit - let AI agents book home services and taskers",
   "main": "dist/index.js",
   "bin": {
@@ -28,7 +28,8 @@
   "homepage": "https://striderlabs.ai",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "patchright": "^1.58.2"
+    "patchright": "^1.58.2",
+    "playwright": "^1.61.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

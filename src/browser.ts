@@ -752,14 +752,31 @@ export async function bookTask(
 
     // Get booking ID from URL or page
     const urlMatch = p.url().match(/tasks?\/(\w+)|booking\/(\w+)|confirmation\/(\w+)/);
-    const bookingId =
-      urlMatch?.[1] || urlMatch?.[2] || urlMatch?.[3] || `booking-${Date.now()}`;
+    const bookingId = urlMatch?.[1] || urlMatch?.[2] || urlMatch?.[3];
+
+    // Look for an on-page confirmation indicator as a fallback verification.
+    const confirmationText =
+      (await p
+        .locator('[class*="confirmation"], [class*="success"], h1:has-text("Booked"), h1:has-text("Confirmed")')
+        .first()
+        .textContent()
+        .catch(() => null)) || null;
 
     await saveCookies(ctx);
 
+    // VERIFY-OR-FAIL-LOUD: never fabricate a booking id. Require a real id or on-page confirmation.
+    if (!bookingId && !confirmationText) {
+      return {
+        success: false,
+        error:
+          "Booking could not be verified: no booking id or confirmation was found on the page after submitting. " +
+          "The task may NOT have been booked. Check your TaskRabbit account before retrying.",
+      };
+    }
+
     return {
       success: true,
-      bookingId,
+      bookingId: bookingId ?? undefined,
       summary,
     };
   } catch (error) {
@@ -961,8 +978,9 @@ export async function messageTasker(
  */
 export async function cancelTask(
   taskId: string,
-  reason?: string
-): Promise<{ success: boolean; error?: string }> {
+  reason?: string,
+  confirm?: boolean
+): Promise<{ success: boolean; error?: string; requiresConfirmation?: boolean; summary?: unknown }> {
   const p = await getPage();
   const ctx = await getContext();
 
@@ -982,6 +1000,15 @@ export async function cancelTask(
         success: false,
         error:
           "Cancel option not found. The task may not be cancellable or may already be completed.",
+      };
+    }
+
+    // CONFIRM GATE: do not begin cancellation unless confirm===true.
+    if (confirm !== true) {
+      return {
+        success: false,
+        requiresConfirmation: true,
+        summary: { taskId, reason: reason ?? null },
       };
     }
 
@@ -1016,7 +1043,24 @@ export async function cancelTask(
       await p.waitForTimeout(3000);
     }
 
+    // VERIFY-OR-FAIL-LOUD: require an on-page cancellation/success indicator before reporting success.
+    const cancelSuccess =
+      (await p
+        .locator('[class*="cancelled"], [class*="canceled"], [class*="success"], :has-text("has been cancelled"), :has-text("has been canceled")')
+        .first()
+        .textContent()
+        .catch(() => null)) || null;
+
     await saveCookies(ctx);
+
+    if (!cancelSuccess) {
+      return {
+        success: false,
+        error:
+          "Cancellation could not be verified: no on-page cancellation confirmation was found. " +
+          "The task may still be active. Verify in your TaskRabbit account before retrying.",
+      };
+    }
 
     return { success: true };
   } catch (error) {
